@@ -83,6 +83,8 @@ void NodeListDealloc(NodeList *list);
 BOOL NodeListIsEmpty(NodeList *list);
 void NodeListAdd(NodeList *list, Node *node);
 Node *NodeListDelete(NodeList *list, NodeData key, BOOL freeDeleted);
+Node *NodeListFindKey(NodeList *list, NodeData key);
+Node *NodeListFindValue(NodeList *list, NodeData value);
 
 void NodeListForEach(NodeList *list, NodeListIterator iterator);
 NodeList *NodeListMap(NodeList *list, NodeListMapIterator iterator);

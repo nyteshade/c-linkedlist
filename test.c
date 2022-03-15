@@ -9,6 +9,8 @@ void printList(NodeList *list) {
   NodeListForEach(list, _fe);
 }
 
+extern void _printNode(Node *node);
+
 BOOL _fl(Node *node, int index, NodeList *list) {
   return (node && node->value.data.integer > 1);
 }
@@ -48,6 +50,7 @@ int main(int argc, char **argv) {
   Node *reduced = NULL;
   Node *a = NodeAllocTextKeyedInteger("Brielle", 1);
   Node *b = NodeAllocTextKeyedInteger("was here", 2);
+  Node *c = NULL;
 
   printList(list);
 
@@ -64,6 +67,16 @@ int main(int argc, char **argv) {
 
   reduced = NodeListReduce(list2, _rd, NULL);
   printf("Reduced: %ld %s (%p)\n", reduced->value.data.integer, reduced->key.data.text, reduced);
+
+  c = NodeListFindValue(list, NodeDataInteger(2));
+  if (c) {
+    printf("value 2 was found. It matches b? %s\n", c == b ? "true" : "false");
+  }
+  else {
+    printf("No value was found.\n");
+  }
+
+  printf("\n");
 
   NodeListDealloc(list);
   NodeListDealloc(list2);

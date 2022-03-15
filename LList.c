@@ -33,6 +33,73 @@ BOOL _nodeDefaultComparator(NodeData *left, NodeData *right) {
   }
 }
 
+void _printNode(Node *node) {
+  char output[255];
+  NodeData pair[2];
+  int i;
+
+  sprintf(output, "Node(%p)", node);
+  if (!node) {
+    printf("%s: NULL\n", output);
+    return; 
+  }
+
+  pair[0] = node->key;
+  pair[1] = node->value;
+
+  for (i = 0; i < 2; i++) {
+    char *name = i == 0 ? "key" : "value";
+
+    switch (pair[i].type) {
+      case NT_Text:
+        sprintf(
+          output, 
+          "%s %s(%s):%s", 
+          output, 
+          name, 
+          "text", 
+          pair[i].data.text
+        );
+        break;
+
+      case NT_Pointer:
+        sprintf(
+          output, 
+          "%s %s(%s):%p", 
+          output, 
+          name, 
+          "pointer", 
+          pair[i].data.pointer
+        );
+        break;
+        
+      case NT_Integer:
+        sprintf(
+          output, 
+          "%s %s(%s):%ld", 
+          output, 
+          name, 
+          "integer", 
+          pair[i].data.integer
+        );
+        break;
+
+      case NT_Decimal:
+        sprintf(
+          output, 
+          "%s %s(%s):%f", 
+          output, 
+          name, 
+          "decimal", 
+          pair[i].data.decimal
+        );
+        break;
+    };    
+  }
+
+  printf("%s\n", output);
+}
+
 /***************************************************************************/
 
 NodeData NodeDataText(char *text, BOOL duplicate) {
@@ -137,14 +204,18 @@ Node *NodeClone(Node *node) {
 
 void NodeDealloc(Node *node) {
   if (node) {
+    printf("Freeing Node(%p)\n", node);
     if (node->key.type == NT_Text && node->key.data.text) {
+      printf("  ..freeing key text (%p)\n", node->key.data.text);
       free(node->key.data.text);
     }
 
     if (node->value.type == NT_Text && node->value.data.text) {
+      printf("  ..freeing value text (%p)\n", node->value.data.text);
       free(node->value.data.text);
     }
 
+    printf("  ..done\n");
     free(node);
   }
 }
@@ -341,6 +412,8 @@ void NodeListDealloc(NodeList *list) {
     return;
   }
 
+  printf("Freeing list(%p)\n", list);
+
   current = list->head;
   while (current) {
     previous = current;
@@ -350,6 +423,7 @@ void NodeListDealloc(NodeList *list) {
   }
 
   free(list);
+  printf("  ..list done\n");
 }
 
 /***************************************************************************/
@@ -408,6 +482,40 @@ Node *NodeListDelete(NodeList *list, NodeData key, BOOL freeDeleted) {
   }
 
   return current;
+}
+
+Node *__NodeFindData__(NodeList *list, NodeData key, BOOL isKey) {
+  Node *node = NULL;
+  Node *match = NULL;
+
+  if (!list || !list->head) { 
+    return NULL;
+  }
+
+  node = list->head;
+  while (node && !match) {
+    if (isKey) {
+      if (_nodeDefaultComparator(&node->key, &key)) {
+        match = node;
+      }
+    }
+    else {
+      if (_nodeDefaultComparator(&node->value, &key)) {
+        match = node;
+      }
+    }
+    node = node->next;
+  }
+
+  return match;
+}
+
+Node *NodeListFindKey(NodeList *list, NodeData key)
+{
+  return __NodeFindData__(list, key, TRUE);
+}
+Node *NodeListFindValue(NodeList *list, NodeData value) {
+  return __NodeFindData__(list, value, FALSE);
 }
 
 void NodeListForEach(NodeList *list, NodeListIterator iterator) {
